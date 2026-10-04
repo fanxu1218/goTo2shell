@@ -138,6 +138,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         settings?.setStatus(error.localizedDescription, isError: true)
         NSApp.activate(ignoringOtherApps: true)
         let alert = NSAlert()
+        if case ShellError.finderLocationUnavailable = error {
+            alert.alertStyle = .informational
+            alert.messageText = "此页面没有固定目录"
+            alert.informativeText = error.localizedDescription
+            alert.addButton(withTitle: "选择文件夹…")
+            alert.addButton(withTitle: "打开设置")
+            alert.addButton(withTitle: "取消")
+            let response = alert.runModal()
+            if response == .alertFirstButtonReturn {
+                // Let the failing open operation finish before starting another one.
+                DispatchQueue.main.async { [weak self] in self?.chooseFolder() }
+            } else if response == .alertSecondButtonReturn {
+                showSettings()
+            }
+            return
+        }
         alert.alertStyle = .warning
         alert.messageText = "暂时无法打开终端"
         alert.informativeText = error.localizedDescription

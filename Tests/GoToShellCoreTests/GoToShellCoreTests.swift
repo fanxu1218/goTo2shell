@@ -86,6 +86,23 @@ final class GoToShellCoreTests: XCTestCase {
         }
     }
 
+    func testVirtualFinderLocationIsDistinctFromDeniedAutomation() {
+        XCTAssertThrowsError(try AppleScriptRunner.run("error \"no folder\" number 1002")) { error in
+            guard case ShellError.finderLocationUnavailable = error else {
+                return XCTFail("Expected a virtual Finder location: \(error)")
+            }
+            XCTAssertFalse(error.localizedDescription.contains("1002"))
+            XCTAssertTrue(error.localizedDescription.contains("最近使用"))
+        }
+        XCTAssertThrowsError(try AppleScriptRunner.run("error \"denied\" number -1743")) { error in
+            guard case ShellError.script(let code, _) = error else {
+                return XCTFail("Expected the original permission error: \(error)")
+            }
+            XCTAssertEqual(code, -1743)
+            XCTAssertTrue(error.localizedDescription.contains("自动化"))
+        }
+    }
+
     func testFinderAndTerminalScriptsCompileWithoutRunningAutomation() {
         for source in [Scripts.finderDirectory(preferSelection: false),
                        Scripts.finderDirectory(preferSelection: true), TerminalChoice.terminal.script] {

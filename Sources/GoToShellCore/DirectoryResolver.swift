@@ -5,6 +5,7 @@ public enum ShellError: LocalizedError {
     case missingPath(String)
     case controlCharacter
     case multipleItems
+    case finderLocationUnavailable
     case script(Int, String)
     case unavailableTerminal(String)
 
@@ -14,6 +15,8 @@ public enum ShellError: LocalizedError {
         case .missingPath(let path): return "目录不存在或暂时无法访问：\(path)"
         case .controlCharacter: return "目录路径包含换行或控制字符，无法安全地发送给终端。"
         case .multipleItems: return "一次请选择一个文件或文件夹。"
+        case .finderLocationUnavailable:
+            return "「最近使用」和搜索结果是汇总页面，没有固定目录。请进入实际文件夹后重试；也可以在设置中启用「优先打开 Finder 中选中的项目」，选中一个文件后打开其所在目录，或直接选择文件夹。"
         case .script(let code, let message):
             if code == -1743 {
                 return "请在系统设置 → 隐私与安全性 → 自动化中，允许 GoToShell 控制 Finder 和所选终端，然后重试。"

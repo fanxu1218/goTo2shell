@@ -53,9 +53,14 @@ public enum Scripts {
                 return POSIX path of (desktop as alias)
             end if
             try
-                return POSIX path of ((target of front Finder window) as alias)
-            on error
-                error "当前 Finder 页面没有本机目录。请打开实际文件夹后重试。" number 1002
+                set currentTarget to get target of front Finder window
+                return POSIX path of (currentTarget as alias)
+            on error errorMessage number errorNumber
+                if errorNumber is -1700 or errorNumber is -1728 then
+                    error "当前 Finder 页面没有固定目录。" number 1002
+                end if
+                -- Preserve permission, timeout and other unexpected errors.
+                error errorMessage number errorNumber
             end try
         end tell
         """
@@ -90,6 +95,7 @@ public enum AppleScriptRunner {
         if let details {
             let code = (details[NSAppleScript.errorNumber] as? NSNumber)?.intValue ?? -1
             let message = details[NSAppleScript.errorMessage] as? String ?? "自动化失败。"
+            if code == 1002 { throw ShellError.finderLocationUnavailable }
             throw ShellError.script(code, message)
         }
         return result
